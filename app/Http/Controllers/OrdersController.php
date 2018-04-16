@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Orders;
+use App\User;
 use App\Shipments;
 use App\LogShipmentStatus;
 use App;
@@ -21,7 +22,7 @@ class OrdersController extends Controller
                      'ACCESS_TOKEN'  => '35364181c599e977a5ba4d6b3401068e'
                 ]);
     }
-   
+
 
     public function index()
     {
@@ -37,7 +38,10 @@ class OrdersController extends Controller
     public function store(Request $request)
     {
         $input = $request->all();
-        $input['line_items'] = json_encode($input['line_items']);
+        // echo "<pre>";
+        // print_r($input["ref"]);
+        // exit;
+        $input['line_items'] = json_encode($input);
         $input['order_id'] = $input['id'];
         unset($input['id']);
 
@@ -52,7 +56,7 @@ class OrdersController extends Controller
         if($input['status'] != ""){
             $order = Orders::find($input['order_id']);
             if($order->tracking_number == ""){
-                
+
                 $call = $this->shopify->call(
                   ['URL' => 'admin/orders/' . $order->order_id . '/fulfillments.json',
                   'METHOD' => 'POST',
@@ -70,7 +74,7 @@ class OrdersController extends Controller
 
                 $order->tracking_number = $tracking_number;
                 $order->save();
-                
+
                 $shipment = Shipments::create([
                     'fk_order'        => $input['order_id'],
                     'tracking_number' => $tracking_number,
@@ -92,8 +96,8 @@ class OrdersController extends Controller
                         }
                     }']);
 
-                
-                
+
+
             }
             LogShipmentStatus::create([
                 'fk_shipment'           => $shipment->id,
@@ -111,12 +115,12 @@ class OrdersController extends Controller
         $shipment = Shipments::where('tracking_number',$tracking_number)->first();
         $shipment_logs = [];
         if(count($shipment)>0){
-           $shipment_logs = LogShipmentStatus::where('fk_shipment',$shipment->id)->orderBy('id','desc')->get(); 
+           $shipment_logs = LogShipmentStatus::where('fk_shipment',$shipment->id)->orderBy('id','desc')->get();
         }
         return view('track-shipment',compact('tracking_number','shipment_logs'));
 
     }
-    
+
     public function update(Request $request)
     {
         $input = $request->all();
@@ -131,5 +135,12 @@ class OrdersController extends Controller
         //$article->delete();
 
         //return response()->json(null, 204);
+    }
+
+    public function showUserToken()
+    {
+
+        $users = User::all();
+        return view('user',compact('users'));
     }
 }
