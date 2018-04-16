@@ -15,7 +15,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('articles', 'ArticleController@index');
+Route::post('register', 'Auth\RegisterController@register');
+Route::post('login', 'Auth\LoginController@login');
+Route::post('logout', 'Auth\LoginController@logout');
+
 Route::get('orders', 'OrdersController@index');
 Route::post('orders/create', 'OrdersController@store');
 Route::post('orders/accept', 'OrdersController@accept');
