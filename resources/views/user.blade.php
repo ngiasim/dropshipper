@@ -16,7 +16,6 @@
         <th>Name</th>
         <th>Email</th>
 				<th>Api Token</th>
-				<th>Source</th>
       </tr>
     </thead>
     <tbody>
@@ -25,7 +24,6 @@
         <td>{{$user->name}}</td>
         <td>{{$user->email}}</td>
         <td>{{$user->api_token}}</td>
-				<td>{{$user->ref}}</td>
       </tr>
 			@endforeach
 

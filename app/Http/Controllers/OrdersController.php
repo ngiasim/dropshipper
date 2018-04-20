@@ -41,12 +41,34 @@ class OrdersController extends Controller
         // echo "<pre>";
         // print_r($input["ref"]);
         // exit;
-        $input['line_items'] = json_encode($input);
-        $input['order_id'] = $input['id'];
-        unset($input['id']);
+        if (count($input) > 0){
+          if ($input["ref"] == "shopify"){
+              $input['line_items'] = json_encode($input['line_items']);
+              $input['order_id'] = $input['id'];
+              unset($input['id']);
 
-        $article = Orders::create($input);
-        return response()->json('order placed');
+              Orders::create($input);
+              return response()->json('order placed');
+            }else if($input["ref"] == "wordpress"){
+              $input['line_items'] = json_encode($input['line_items']);
+              $input['order_id'] = $input['id'];
+              $input['email'] = $input['billing']['email'];
+
+              $input['total_price'] = $input['total'];
+              $input['total_tax '] = $input['total_tax'];
+              $input['currency'] = $input['currency'];
+              $input['financial_status'] = $input['status'];
+              $input['name'] = $input['number'];
+              $input['order_number'] = $input['number'];
+              $input['source_url'] = $input['customer_user_agent'];
+              $input['processing_method'] = $input['payment_method'];
+
+              unset($input['id']);
+
+              Orders::create($input);
+              return response()->json('order placed');
+            }
+        }
     }
 
     public function accept(Request $request)

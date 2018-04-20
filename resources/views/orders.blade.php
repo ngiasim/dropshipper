@@ -10,7 +10,7 @@
 <div class="container">
 		<div class="row">
 			<div class="page-header admin-header">
-				<h3 id="page-title">All Orders</h3>      
+				<h3 id="page-title">All Orders</h3>
 			</div>
 		</div>
 		<div class='row'>
@@ -30,6 +30,7 @@
 				<table class="table table-bordered" id="table_data">
 					<thead>
 						<tr>
+						<th>Id</th>
 						<th>Order Number</th>
 						<th>Email</th>
 						<th>Total Price</th>
@@ -40,13 +41,14 @@
 					<tbody>
 						@foreach($orders as $row)
 							<tr>
+								<td>{{$row['id']}}</td>
 								<td>
 									@if($row['tracking_number'] == "")
 										{{$row['order_number']}}
 									@else
 										<a target="_blank" href="{{ url('track/'.$row['tracking_number']) }}">{{$row['order_number']}}</a>
 									@endif
-									
+
 								</td>
 								<td>{{$row['email']}}</td>
 								<td>{{$row['total_price']}}</td>

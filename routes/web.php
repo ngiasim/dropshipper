@@ -29,3 +29,7 @@ Route::get('track/{tracking_number}', 'OrdersController@trackShipment');
 Route::resource('packages', 'PackagesController');
 
 Route::get('users', 'OrdersController@showUserToken');
+
+Auth::routes();
+
+Route::get('/home', 'HomeController@index')->name('home');
