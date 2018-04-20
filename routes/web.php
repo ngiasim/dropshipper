@@ -27,6 +27,7 @@ Route::get('orders', 'OrdersController@index');
 Route::post('orders/accept', 'OrdersController@accept');
 Route::get('track/{tracking_number}', 'OrdersController@trackShipment');
 Route::resource('packages', 'PackagesController');
+Route::resource('shops', 'ShopsController');
 
 Route::get('users', 'OrdersController@showUserToken');
 

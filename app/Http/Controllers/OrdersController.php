@@ -7,23 +7,12 @@ use App\Orders;
 use App\User;
 use App\Shipments;
 use App\LogShipmentStatus;
+use App\Shops;
+use Illuminate\Support\Facades\Auth;
 use App;
 
 class OrdersController extends Controller
 {
-    protected   $shopify;
-
-    public function __construct(){
-
-        $this->shopify = App::make('ShopifyAPI', [
-                     'API_KEY'       => 'edd5a92b1f8d47400b22964c10858047',
-                     'API_SECRET'    => '90dcb42ada32de7196b31a695557e161',
-                     'SHOP_DOMAIN'   => 'f9-dev.myshopify.com',
-                     'ACCESS_TOKEN'  => '35364181c599e977a5ba4d6b3401068e'
-                ]);
-    }
-
-
     public function index()
     {
         $orders  =  Orders::select('orders.id','order_number','email','total_price','order_id','orders.tracking_number','shipments.shipment_status')->leftjoin('shipments','orders.id', 'shipments.fk_order')->get();
@@ -73,13 +62,21 @@ class OrdersController extends Controller
 
     public function accept(Request $request)
     {
+      $user_id = Auth::user()->id;
+      $shop = Shops::where(['fk_user'=>$user_id,'platform'=>'shopify'])->first();
+      $shopify = App::make('ShopifyAPI', [
+                     'API_KEY'       => $shop->api_key,
+                     'API_SECRET'    => $shop->shared_key,
+                     'SHOP_DOMAIN'   => $shop->site_address,
+                     'ACCESS_TOKEN'  => $shop->secret_key
+                ]);
         $input = $request->all();
         $tracking_number = rand(1000000,9999999);
         if($input['status'] != ""){
             $order = Orders::find($input['order_id']);
             if($order->tracking_number == ""){
 
-                $call = $this->shopify->call(
+                $call = $shopify->call(
                   ['URL' => 'admin/orders/' . $order->order_id . '/fulfillments.json',
                   'METHOD' => 'POST',
                   'DATA' => '{
@@ -109,7 +106,7 @@ class OrdersController extends Controller
                 $shipment->shipment_status = $input['status'];
                 $shipment->save();
 
-                $call = $this->shopify->call(
+                $call = $shopify->call(
                   ['URL' => 'admin/orders/' . $order->order_id . '/fulfillments/' . $shipment->fulfillment_id . '/events.json',
                   'METHOD' => 'POST',
                   'DATA' => '{
