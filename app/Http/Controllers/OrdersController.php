@@ -16,15 +16,6 @@ class OrdersController extends Controller
 {
     public function index()
     {
-
-        $data = ['webhook' => [
-              'name' => 'An add to cart webhook',
-              'secret' => 'my-super-secret-private-key',
-              'topic' => 'action.woocommerce_add_to_cart',
-              'delivery_url' => 'http://requestb.in/1exdwip1'
-          ]];
-        $return = Woocommerce::post('wc-api/v3/webhooks',$data);
-        dd($return);
         $orders  =  Orders::select('orders.id','order_number','email','total_price','order_id','orders.tracking_number','shipments.shipment_status')->leftjoin('shipments','orders.id', 'shipments.fk_order')->get();
         return view('orders',compact('orders'));
     }

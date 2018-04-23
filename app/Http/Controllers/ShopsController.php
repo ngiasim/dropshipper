@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Shops;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Auth;
+use Woocommerce;
 use App;
 
 class ShopsController extends Controller
@@ -32,7 +33,7 @@ class ShopsController extends Controller
 
         if($input['platform'] == 'shopify'){
 
-            
+
             $input['fk_user'] = Auth::user()->id;
             $shop = Shops::create($input);
             $shopify = App::make('ShopifyAPI', [
@@ -44,14 +45,14 @@ class ShopsController extends Controller
 
             $api_token = Auth::user()->api_token;
             $url = "http://647ce01b.ngrok.io/dropshipper/public/orders/create?ref=shopify&api_tokens=$api_token";
-                
+
             $call = $shopify->call(
                   ['URL' => 'admin/webhooks.json',
                   'METHOD' => 'POST',
                   'DATA' => '{
                         "webhook": {
                             "topic": "orders/create",
-                            "address": "'.$url.'", 
+                            "address": "'.$url.'",
                             "format": "json"
                         }
                     }']);
@@ -60,15 +61,35 @@ class ShopsController extends Controller
             $shop->update();
 
             return Redirect::to('shops')->with('success','Shop created successfully.');
+        }else if($input['platform'] == 'wordpress'){
+
+
+            $input['fk_user'] = Auth::user()->id;
+            $shop = Shops::create($input);
+
+            $api_token = Auth::user()->api_token;
+            $url = "http://647ce01b.ngrok.io/dropshipper/public/orders/create?ref=wordpress&api_tokens=$api_token";
+
+
+            $data = [
+                'name' => 'Order created',
+                'topic' => 'order.created',
+                'delivery_url' => $url,
+              ];
+            $call = Woocommerce::post('webhooks',$data);
+            $shop->response = json_encode($call);
+            $shop->update();
+
+            return Redirect::to('shops')->with('success','Shop created successfully.');
         }else{
-            return Redirect::back()->withInput()->with('error',strtoupper($input['platform']).' will be launching soon.');    
+            return Redirect::back()->withInput()->with('error',strtoupper($input['platform']).' will be launching soon.');
         }
     }
 
     public function edit($id) {
         $edit_section  =  Shops::where('shop_id',$id)->first();
         return view('shops.create',compact('edit_section','id'));
-    }   
+    }
 
     public function update(Request $request)
     {
